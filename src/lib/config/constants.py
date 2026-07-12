@@ -1,0 +1,6 @@
+T_FROST: int = 170 # kelvin
+T_DUST_SUBLIMATION: int = 1500 # kelvin
+KG_TO_SOLAR_MASS_RATIO: int = 1989*(10**27)
+KG_TO_EARTH_MASS_RATIO: int = 5972*(10**21)
+AU_TO_KM_RATIO: int = 1496*(10**6)
+SOLAR_R_TO_KM_RATIO: int =  695700
