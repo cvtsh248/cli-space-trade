@@ -71,10 +71,22 @@ class SolarSystemGen:
     @staticmethod
     def calculate_star_radius(mass: int) -> int:
         if mass >= constants.KG_TO_SOLAR_MASS_RATIO:
-            return int((mass*constants.KG_TO_SOLAR_MASS_RATIO)**0.57)*constants.SOLAR_R_TO_KM_RATIO
+            return int((mass/constants.KG_TO_SOLAR_MASS_RATIO)**0.57*constants.SOLAR_R_TO_KM_RATIO)
         elif mass < constants.KG_TO_SOLAR_MASS_RATIO:
-            return int((mass*constants.KG_TO_SOLAR_MASS_RATIO)**0.8)*constants.SOLAR_R_TO_KM_RATIO
+            return int((mass/constants.KG_TO_SOLAR_MASS_RATIO)**0.8*constants.SOLAR_R_TO_KM_RATIO)
         return 0
+    
+    # source for this is gemini but I'm blindly trusting it hasn't hallucinated these equations for now
+    @staticmethod
+    def calculate_star_luminosity(mass: int) -> float:
+        if mass/constants.KG_TO_SOLAR_MASS_RATIO < 0.43:
+            return 0.23*((mass/constants.KG_TO_SOLAR_MASS_RATIO)**2.3)
+        elif mass/constants.KG_TO_SOLAR_MASS_RATIO < 2.0:
+            return (mass/constants.KG_TO_SOLAR_MASS_RATIO)**4.0
+        elif mass/constants.KG_TO_SOLAR_MASS_RATIO < 55.0:
+            return 1.4*((mass/constants.KG_TO_SOLAR_MASS_RATIO))**3.5
+        else:
+            return 29090 * (mass/constants.KG_TO_SOLAR_MASS_RATIO)
 
     @staticmethod
     def calculate_moon_inner_edge(mass_p: int, radius_p: int, mass_m: int, radius_m: int) -> int: # roche limit
@@ -86,8 +98,8 @@ class SolarSystemGen:
 
     @staticmethod
     def generate_system() -> SolarSystem:
-        s_luminosity: float = random.uniform(1,100)
-        s_mass: int = random.randint(int(constants.KG_TO_SOLAR_MASS_RATIO/10),constants.KG_TO_SOLAR_MASS_RATIO*100)
+        s_mass: int = random.randint(int(constants.KG_TO_SOLAR_MASS_RATIO),constants.KG_TO_SOLAR_MASS_RATIO*100)
+        s_luminosity: float = SolarSystemGen.calculate_star_luminosity(s_mass)
         s_frost_line: int = SolarSystemGen.calculate_star_frost_line(s_luminosity)
         planet_count: int = random.randint(5,15)
 
