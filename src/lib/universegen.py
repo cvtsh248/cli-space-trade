@@ -61,7 +61,7 @@ class SolarSystemGen:
     
     @staticmethod
     def calculate_inner_planet_edge(luminosity: float) -> int: # sublimation limit for planets, km
-        return int((((278*(luminosity**0.25))/constants.T_DUST_SUBLIMATION)**2)*constants.AU_TO_KM_RATIO)
+        return int((((278*(luminosity**0.25))/constants.T_DUST_SUBLIMATION))*constants.AU_TO_KM_RATIO)
     
 
     @staticmethod
@@ -101,7 +101,7 @@ class SolarSystemGen:
         s_mass: int = random.randint(int(constants.KG_TO_SOLAR_MASS_RATIO),constants.KG_TO_SOLAR_MASS_RATIO*100)
         s_luminosity: float = SolarSystemGen.calculate_star_luminosity(s_mass)
         s_frost_line: int = SolarSystemGen.calculate_star_frost_line(s_luminosity)
-        planet_count: int = random.randint(5,15)
+        planet_count: int = random.randint(5,10)
 
         star: Star = Star(str(uuid.uuid4()), "x", s_luminosity, s_mass, SolarSystemGen.calculate_star_radius(s_mass))
 
@@ -119,7 +119,13 @@ class SolarSystemGen:
 
             # default case is terrestrial rocky
             p_type: PlanetType = PlanetType.TERRESTRIAL_ROCKY
-            p_mass: int = random.randint(1*constants.KG_TO_EARTH_MASS_RATIO, 300*constants.KG_TO_EARTH_MASS_RATIO)
+            terr_p: bool = bool(random.getrandbits(1))
+            p_mass: int = 0
+
+            if terr_p == True:
+                p_mass = random.randint(1*constants.KG_TO_EARTH_MASS_RATIO, 9*constants.KG_TO_EARTH_MASS_RATIO)
+            elif terr_p == False:
+                p_mass = random.randint(10*constants.KG_TO_EARTH_MASS_RATIO, 300*constants.KG_TO_EARTH_MASS_RATIO)
             p_radius: int = 0
 
             # loosely based on https://arxiv.org/pdf/1603.08614
@@ -136,14 +142,19 @@ class SolarSystemGen:
             # moon calculations
             moon_count: int = random.randint(0,10)
             moon_temp_array: list[Moon] = []
-            
+
+            moon_pos_buffer: int = 0
             for i in range(0, moon_count):
                 moon_radius: int = random.randint(100, 2000)
                 moon_mass: int = int((4/3)*math.pi*(moon_radius**3)*3000*(10**9)) # rocky density?
                 # print(f"{moon_radius=},{moon_mass=},{p_radius=},{p_mass=},{s_mass=}")
                 inner_moon_edge: int = SolarSystemGen.calculate_moon_inner_edge(p_mass, p_radius, moon_mass, moon_radius)
                 outer_moon_edge: int = SolarSystemGen.calculate_moon_outer_edge(p_mass, s_mass, semi_major_axis_temp)
-                moon: Moon = Moon(str(uuid.uuid4()),"m",random.randint(inner_moon_edge, outer_moon_edge),random.uniform(0,2*math.pi), moon_mass, moon_radius)
+                moon_pos_buffer = int(max(int(2.5 * p_radius), inner_moon_edge) + ((outer_moon_edge-inner_moon_edge)/moon_count)*i)
+                # if len(moon_temp_array) > 0:
+                #     while random.randint(inner_moon_edge, outer_moon_edge) - moon_temp_array[-1].radius_km > moon_temp_array[-1].semi_major_axis_km:
+                #         moon_pos_buffer = random.randint(inner_moon_edge, outer_moon_edge)
+                moon: Moon = Moon(str(uuid.uuid4()),"m",moon_pos_buffer,random.uniform(0,2*math.pi), moon_mass, moon_radius)
                 moon_temp_array.append(moon)
 
             planet: Planet = Planet(str(uuid.uuid4()), "p", p_type, semi_major_axis_temp, random.uniform(0, 2*math.pi), p_mass, p_radius, moon_temp_array)
